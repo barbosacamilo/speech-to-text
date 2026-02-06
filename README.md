@@ -1,5 +1,3 @@
-# linetalk
-
 A streaming speech-to-text web app built in vanilla JS, using the browser’s Web Speech API.
 
 ## Demo

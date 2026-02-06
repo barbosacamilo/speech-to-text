@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speech-to-text</title>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      line-height: 1.4;
+      background: #f6f7fb;
+      color: #0f172a;
+    }
+
+    :focus-visible {
+      outline: 3px solid rgba(34, 197, 94, 0.35);
+      outline-offset: 2px;
+      border-radius: 12px;
+    }
+
+    .container {
+      min-height: 100%;
+      display: grid;
+      place-items: start center;
+      padding: 28px 16px 48px;
+    }
+
+    .content {
+      width: 100%;
+      max-width: 920px;
+    }
+
+    .header {
+      margin-bottom: 14px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: rgba(15, 23, 42, 0.60);
+      font-size: 13px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid rgba(15, 23, 42, 0.10);
+      border-radius: 16px;
+      box-shadow:
+        0 12px 35px rgba(15, 23, 42, 0.08),
+        0 2px 10px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .field {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: rgba(15, 23, 42, 0.65);
+    }
+
+    select {
+      appearance: none;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 10px;
+      padding: 8px 34px 8px 10px;
+      font-size: 13px;
+      line-height: 1;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+    }
+
+    .select-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .select-wrap::after {
+      content: "▾";
+      position: absolute;
+      right: 10px;
+      pointer-events: none;
+      color: rgba(15, 23, 42, 0.55);
+      font-size: 12px;
+    }
+
+    .btn {
+      height: 40px;
+      padding: 0 14px;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      border-radius: 12px;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.06s ease, background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
+    }
+
+    .btn:hover {
+      background: rgba(15, 23, 42, 0.02);
+      border-color: rgba(15, 23, 42, 0.22);
+    }
+
+    .btn:active { transform: translateY(1px); }
+
+    .btn[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      border-color: #1d4ed8;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+      border-color: #1e40af;
+    }
+
+    .btn-danger {
+      background: #6b7280;
+      border-color: #4b5563;
+      color: #ffffff;
+    }
+
+    .btn-danger:hover {
+      background: #4b5563;
+      border-color: #374151;
+    }
+
+    #copy-btn {
+      background: #ffffff;
+      border-color: rgba(15, 23, 42, 0.22);
+      color: #0f172a;
+    }
+
+    #copy-btn:hover {
+      background: rgba(15, 23, 42, 0.02);
+      border-color: rgba(15, 23, 42, 0.32);
+    }
+
+    .editor {
+      margin-top: 14px;
+    }
+
+    textarea#text {
+      width: 100%;
+      min-height: 320px;
+      resize: vertical;
+      border-radius: 14px;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      background: #ffffff;
+      color: #0f172a;
+      padding: 14px 14px;
+      font-size: 14px;
+      line-height: 1.55;
+      box-shadow: inset 0 1px 0 rgba(15, 23, 42, 0.03);
+    }
+
+    textarea#text::placeholder {
+      color: rgba(15, 23, 42, 0.40);
+    }
+
+    #error-msg {
+      margin: 10px 0 0;
+      min-height: 18px;
+      font-size: 12px;
+      color: #b91c1c;
+      white-space: pre-wrap;
+    }
+  </style>
+
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="content">
+        <div class="header">
+          <div class="header-text">
+            <h1 class="title">Speech-to-text</h1>
+            <p class="subtitle">Streaming dictation. Press Start and speak.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="field">
+                <label for="lang-selector">Language</label>
+                <span class="select-wrap">
+                  <select id="lang-selector">
+                    <option value="es-CO">es-CO</option>
+                    <option value="es-ES">es-ES</option>
+                    <option value="es-MX">es-MX</option>
+                    <option value="es-US">es-US</option>
+                  </select>
+                </span>
+              </div>
+
+              <div class="controls">
+                <button class="btn btn-primary" id="play-btn" type="button">
+                  Start
+                </button>
+                <button class="btn btn-danger" id="clear-btn" type="button">
+                  Clear
+                </button>
+                <button class="btn" id="copy-btn" type="button">
+                  Copy
+                </button>
+              </div>
+            </div>
+
+            <div class="editor">
+              <textarea
+                id="text"
+                placeholder="Here you'll see the dictated text..."
+                spellcheck="false"
+              ></textarea>
+
+              <p id="error-msg" role="status" aria-live="polite"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
